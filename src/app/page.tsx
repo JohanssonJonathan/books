@@ -1,126 +1,56 @@
-import Image from "next/image";
-
-import { MongoClient } from 'mongodb';
-
-
-async function getAllStudents(client: MongoClient) {
-    const result = await client.db("wu24").collection("students").find().toArray();
-
-    return result;
-}
+import { connectToDb } from './_util/dbIntegration';
+import { getAllBooks } from './_util/handlers/getAllBooks';
+import { IBook } from './_util/types/types';
 
 export default async function Home() {
+  let books: IBook[] = [];
+  const dbClient = await connectToDb().catch((error) =>
+    console.error('DB connection: ', error.message)
+  );
 
-    const password = process.env.MONGODB_PASSWORD
-const uri = `mongodb+srv://books:${password}@cluster0.4v4ca.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+  if (dbClient) {
+    books =
+      (await getAllBooks(dbClient).catch((error) => {
+        console.error('Cant get books: ', error.message);
+      })) || [];
+  }
 
-    const client = new MongoClient(uri);
-
-        
-          await client.connect()
-
-        const students = await getAllStudents(client)
-console.log('studens: ', students)
-// .then((()=> console.log('conencted'))
-      // .catch((error) => console.error('error: ', error))
-
+  console.log('books: ', books);
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <div>
+      {books.map(({ _id, title, author, releaseDate }) => {
+        return (
+          <div key={_id}>
+            <h2>{title}</h2>
 
-      {JSON.stringify(students)}
-      <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+            <h2>{author}</h2>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <h2>{releaseDate}</h2>
+          </div>
+        );
+      })}{' '}
     </div>
   );
 }
+
+// db.collection('booksCollection').deleteMany({});
+//
+// db.booksCollection.insertOne({ hej: 'hej', title: 'hello', releaseDate: NumberInt(2020), author: 'Jonathan'})
+//
+// db.createCollection("booksCollection", { validator: { $jsonSchema: { bsonType: "object", title: "Student Object Validation", required: [ "title", "author", "releaseDate" ], properties: { title: { bsonType: "string",
+//                description: "'title' must be a string and is required"
+//             },
+//             releaseDate: {
+//                bsonType: "int",
+//                minimum: 1400,
+//                maximum: 3017,
+//                description: "'releaseDate' must be an integer in [ 1400, 3017 ] and is required"
+//             },
+//             author: {
+//                bsonType: "string",
+//                description: "'author' must be a string and is required"
+//             }
+//          }
+//       }
+//    }
+// } )
