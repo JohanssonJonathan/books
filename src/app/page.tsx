@@ -12,8 +12,7 @@ async function getAllStudents(client: MongoClient) {
 export default async function Home() {
 
     const password = process.env.MONGODB_PASSWORD
-    console.log('password: ', password)
-const uri = `mongodb+srv://testUser:${password}@cluster0.w8lqw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://books:${password}@cluster0.4v4ca.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
     const client = new MongoClient(uri);
 
