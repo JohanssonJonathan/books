@@ -1,7 +1,7 @@
 import { connectToDb } from './_util/dbIntegration';
 import { getAllBooks } from './_util/handlers/getAllBooks';
 import { IBook } from './_util/types/types';
-
+import { Key } from 'react';
 export default async function Home() {
   let books: IBook[] = [];
   const dbClient = await connectToDb().catch((error) =>
@@ -15,12 +15,11 @@ export default async function Home() {
       })) || [];
   }
 
-  console.log('books: ', books);
   return (
     <div>
       {books.map(({ _id, title, author, releaseDate }) => {
         return (
-          <div key={_id}>
+          <div key={_id as unknown as Key}>
             <h2>{title}</h2>
 
             <h2>{author}</h2>
