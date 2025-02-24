@@ -3,7 +3,7 @@ import Image from "next/image";
 import { MongoClient } from 'mongodb';
 
 
-async function getAllStudents(client) {
+async function getAllStudents(client: MongoClient) {
     const result = await client.db("wu24").collection("students").find().toArray();
 
     return result;
