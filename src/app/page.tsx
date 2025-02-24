@@ -1,6 +1,30 @@
 import Image from "next/image";
 
-export default function Home() {
+import { MongoClient } from 'mongodb';
+
+
+async function getAllStudents(client) {
+    const result = await client.db("wu24").collection("students").find().toArray();
+
+    return result;
+}
+
+export default async function Home() {
+
+    const password = process.env.MONGODB_PASSWORD
+    console.log('password: ', password)
+const uri = `mongodb+srv://testUser:${password}@cluster0.w8lqw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+    const client = new MongoClient(uri);
+
+        
+          await client.connect()
+
+        const students = await getAllStudents(client)
+console.log('studens: ', students)
+// .then((()=> console.log('conencted'))
+      // .catch((error) => console.error('error: ', error))
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
