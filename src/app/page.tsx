@@ -1,7 +1,9 @@
 import { connectToDb } from './_util/dbIntegration';
 import { getAllBooks } from './_util/handlers/getAllBooks';
 import { IBook } from './_util/types/types';
-import { Key } from 'react';
+import Create from './_components/Create';
+import './BooksGrid.css';
+
 export default async function Home() {
   let books: IBook[] = [];
   const dbClient = await connectToDb().catch((error) =>
@@ -16,18 +18,21 @@ export default async function Home() {
   }
 
   return (
-    <div>
-      {books.map(({ _id, title, author, releaseDate }) => {
-        return (
-          <div key={_id as unknown as Key}>
-            <h2>{title}</h2>
-
-            <h2>{author}</h2>
-
-            <h2>{releaseDate}</h2>
+    <div className="grid-wrapper">
+      <Create />
+      <div className="grid-container">
+        {books.map((book, index) => (
+          <div key={index} className="grid-item">
+            <div className="front">
+              <h3>{book.title}</h3>
+            </div>
+            <div className="back">
+              <p>Author: {book.author}</p>
+              <p>Release Date: {book.releaseDate}</p>
+            </div>
           </div>
-        );
-      })}{' '}
+        ))}
+      </div>
     </div>
   );
 }
