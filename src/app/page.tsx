@@ -1,23 +1,34 @@
-import { connectDB, disconnectDB } from '@/app/api/_dbIntegration/connection';
-import { getBooksHandler } from './api/_handlers/getHandlers';
-import { IBook } from '@/app/types';
-import Container from '@/app/_frontend/components/Container';
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import { getBooksRoute } from './_frontend/util/apiIntegrations';
+import LoadingSpinner from './_frontend/components/LoadingSpinner';
+import BooksView from './_frontend/components/BooksView';
+import Link from 'next/link';
 
-export const fetchCache = 'force-no-store';
+export default function Home() {
+  const { data, isLoading, isError } = useQuery({
+    queryFn: async () => await getBooksRoute(),
+    queryKey: ['books'],
+  });
 
-export default async function Home() {
-  let books: IBook[] = [];
-  const dbClient = await connectDB().catch((error) =>
-    console.error('DB connection: ', error.message)
-  );
-
-  if (dbClient) {
-    books =
-      (await getBooksHandler(dbClient).catch((error) => {
-        console.error('Cant get books: ', error.message);
-      })) || [];
-
-    disconnectDB(dbClient);
+  if (isError) {
+    return (
+      <div className="error-wrapper">
+        <h3>Something went wrong, were not able to show books.</h3>
+      </div>
+    );
   }
-  return <Container books={JSON.parse(JSON.stringify(books))} />;
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <>
+      <div className="flex flex-center">
+        <Link href="/create">Create a book</Link>
+      </div>
+      <BooksView books={data.books} />
+    </>
+  );
 }

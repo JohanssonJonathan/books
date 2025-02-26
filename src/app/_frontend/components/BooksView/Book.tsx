@@ -1,30 +1,25 @@
 import { IBook as IDefaultBook } from '@/app/types';
-import { ObjectId } from 'mongodb';
-import { useState } from 'react';
 import { deleteBookRoute } from '../../util/apiIntegrations';
 import getDateString from '../../util/getDateString';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface IBook {
   book: IDefaultBook;
-  bookRemovedCallback: (id: ObjectId) => void;
 }
-const Book = ({ book, bookRemovedCallback }: IBook) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const removeBook = (id: ObjectId) => {
-    setLoading(true);
-    deleteBookRoute(id)
-      .then(({ id }) => bookRemovedCallback(id))
-      .then(() => setLoading(false))
-      .catch(() => {
-        setLoading(false);
-        setError('Could not remove book');
 
-        setTimeout(() => {
-          setError('');
-        }, 5000);
+const Book = ({ book }: IBook) => {
+  const queryClient = useQueryClient();
+
+  const { isError, mutate, isPending } = useMutation({
+    mutationFn: deleteBookRoute,
+    onSuccess: ({ id }) => {
+      queryClient.setQueryData(['books'], (data: { books: IDefaultBook[] }) => {
+        return {
+          books: data.books.filter((book) => book._id !== id),
+        };
       });
-  };
+    },
+  });
 
   return (
     <div className="grid-item">
@@ -35,12 +30,12 @@ const Book = ({ book, bookRemovedCallback }: IBook) => {
       </div>
       <button
         className="close-button"
-        disabled={Boolean(error)}
-        onClick={() => removeBook(book._id)}
+        disabled={isError}
+        onClick={() => mutate(book._id)}
       >
         &times;
       </button>
-      {loading && <div className="spinner"></div>}
+      {isPending && <div className="spinner"></div>}
     </div>
   );
 };

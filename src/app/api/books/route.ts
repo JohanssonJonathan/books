@@ -1,10 +1,36 @@
 import { NextRequest } from 'next/server';
 import { connectDB, disconnectDB } from '@/app/api/_dbIntegration/connection';
 import { createBookHandler } from '@/app/api/_handlers/createHandlers';
+import { getBooksHandler } from '../_handlers/getHandlers';
 
 export async function GET() {
-  return new Response(JSON.stringify([]), {
-    status: 200,
+  const dbClient = await connectDB().catch((error) =>
+    console.error('DB connection: ', error.message)
+  );
+
+  if (dbClient) {
+    try {
+      const books = await getBooksHandler(dbClient);
+
+      disconnectDB(dbClient);
+      return new Response(
+        JSON.stringify({
+          books,
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    } catch (error) {
+      const currentError = error as unknown as Error;
+      console.error('Error: ', currentError?.message);
+      disconnectDB(dbClient);
+    }
+  }
+
+  return new Response(JSON.stringify({ message: 'Internal server error' }), {
+    status: 500,
     headers: { 'Content-Type': 'application/json' },
   });
 }
@@ -45,8 +71,10 @@ export async function POST(req: NextRequest) {
       }
     } catch (error) {
       disconnectDB(dbClient);
+
       const currentError = error as unknown as Error;
 
+      console.error('Error: ', currentError?.message);
       if (currentError.message === 'invalid date') {
         return new Response(
           JSON.stringify({

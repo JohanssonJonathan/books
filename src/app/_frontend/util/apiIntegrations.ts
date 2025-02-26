@@ -31,3 +31,12 @@ export const deleteBookRoute = (id: ObjectId) =>
 
     throw new Error('Something wrong');
   });
+
+export const getBooksRoute = () =>
+  fetch(`/api/books`, { cache: 'no-cache' }).then((response) => {
+    if (response.ok && response.status === 200) {
+      return response.json();
+    }
+
+    throw new Error('Something wrong');
+  });

@@ -47,9 +47,9 @@ export async function DELETE(
     } catch (error) {
       disconnectDB(dbClient);
 
-      console.error('Error caught:', error); // Log the full error
       const currentError = error as unknown as Error;
 
+      console.error('Error:', currentError.message); // Log the full error
       if (currentError.message.includes('24 character hex string')) {
         return new Response(JSON.stringify({ message: 'Invalid id' }), {
           status: 400,
