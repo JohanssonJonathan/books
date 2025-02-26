@@ -4,10 +4,22 @@ import './style.css';
 import { createBookRoute } from '@/app/_frontend/util/apiIntegrations';
 import getDateString from '@/app/_frontend/util/getDateString';
 import Link from 'next/link';
+import { useMutation } from '@tanstack/react-query';
 
 const CreateBook = () => {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { isError, mutate, isPending, isSuccess, reset } = useMutation({
+    mutationFn: createBookRoute,
+    onSuccess: () => {
+      setNewBook(() => ({
+        title: '',
+        author: '',
+        releaseDate: '',
+      }));
+
+      setTimeout(() => reset(), 5000);
+    },
+  });
+
   const [newBook, setNewBook] = useState({
     title: '',
     author: '',
@@ -15,7 +27,7 @@ const CreateBook = () => {
   });
 
   const { title, author, releaseDate } = newBook;
-  const isDisabled = !title || !author || !releaseDate || loading;
+  const isDisabled = !title || !author || !releaseDate || isPending;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -24,34 +36,16 @@ const CreateBook = () => {
       ...newBook,
       [name]: value,
     }));
-
-    if (error) {
-      setError('');
-    }
   };
 
   const handleForm = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
-    setLoading(true);
 
-    createBookRoute({ title, author, releaseDate })
-      .then(() => {
-        setLoading(false);
-        setNewBook(() => ({
-          title: '',
-          author: '',
-          releaseDate: '',
-        }));
-      })
-      .catch((err) => {
-        setLoading(false);
-        setError('Something went wrong, please try again');
-
-        setTimeout(() => {
-          setError('');
-        }, 5000);
-        console.error('err: ', err);
-      });
+    mutate({
+      title,
+      author,
+      releaseDate,
+    });
   };
 
   return (
@@ -84,11 +78,13 @@ const CreateBook = () => {
             onChange={handleInputChange}
           />
 
-          <div>{error}</div>
+          <div>{isError && 'Something went wrong try again'}</div>
           <input
             disabled={Boolean(isDisabled)}
             type="submit"
-            value={loading ? 'Loading' : 'Add book'}
+            value={
+              isPending ? 'Loading' : isSuccess ? 'Book added' : 'Add book'
+            }
           />
         </form>
       </div>
