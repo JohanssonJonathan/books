@@ -19,37 +19,3 @@ export default async function Home() {
   }
   return <Container books={JSON.parse(JSON.stringify(books))} />;
 }
-
-// db.collection('booksCollection').deleteMany({});
-//
-// db.booksCollection.insertOne({ hej: 'hej', title: 'hello', releaseDate: NumberInt(2020), author: 'Jonathan'})
-//
-// db.createCollection('booksCollection', {
-//   validator: {
-//     $jsonSchema: {
-//       bsonType: 'object',
-//       title: 'Student Object Validation',
-//       required: ['title', 'author', 'releaseDate', 'timestamp'],
-//       properties: {
-//         title: {
-//           bsonType: 'string',
-//           description: "'title' must be a string and is required",
-//         },
-//         releaseDate: {
-//           bsonType: 'date',
-//           description: 'date is required',
-//         },
-//         author: {
-//           bsonType: 'string',
-//           description: "'author' must be a string and is required",
-//         },
-//         timestamp: {
-//           bsonType: 'date',
-//           description: 'timestamp is required',
-//         },
-//       },
-//     },
-//   },
-// });
-//
-//
