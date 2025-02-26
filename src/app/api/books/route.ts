@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { createBookHandler } from '@/app/_util/handlers/createBookHandler';
-import { closeConnectionToDb, connectToDb } from '@/app/_util/dbIntegration';
+import { connectDB, disconnectDB } from '@/app/api/_dbIntegration/connection';
+import { createBookHandler } from '@/app/api/_handlers/createHandlers';
 
 export async function GET() {
   return new Response(JSON.stringify([]), {
@@ -12,22 +12,25 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const { title, author, releaseDate, ...rest } = await req.json();
 
-  const dbClient = await connectToDb().catch((error) =>
+  const dbClient = await connectDB().catch((error) =>
     console.error('DB connection: ', error.message)
   );
 
   if (dbClient) {
     try {
-      if (Object.keys(rest).length) throw new Error('invalid body');
       if (!title || !author || !releaseDate) throw new Error('incomplete body');
+      if (Object.keys(rest).length) throw new Error('invalid body');
+      if (new Date(releaseDate).toString() === 'Invalid Date')
+        throw new Error('invalid date');
 
       const { acknowledged, insertedId } = await createBookHandler(dbClient, {
         title,
         author,
-        releaseDate,
+        releaseDate: new Date(releaseDate),
+        timestamp: new Date(),
       });
 
-      closeConnectionToDb(dbClient);
+      disconnectDB(dbClient);
       if (acknowledged && insertedId) {
         return new Response(
           JSON.stringify({
@@ -41,8 +44,20 @@ export async function POST(req: NextRequest) {
         );
       }
     } catch (error) {
-      closeConnectionToDb(dbClient);
+      disconnectDB(dbClient);
       const currentError = error as unknown as Error;
+
+      if (currentError.message === 'invalid date') {
+        return new Response(
+          JSON.stringify({
+            message: 'Invalid date',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
 
       if (currentError.message === 'invalid body') {
         return new Response(

@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
-import { createBook } from '../dbIntegration';
-import { IBook } from '../types/types';
+import { createBook } from '@/app/api/_dbIntegration/crudoperations';
+import { IBook } from '@/app/types';
 
 export const createBookHandler = (
   client: MongoClient,

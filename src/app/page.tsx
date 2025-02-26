@@ -1,60 +1,55 @@
-import { connectToDb } from './_util/dbIntegration';
-import { getAllBooks } from './_util/handlers/getAllBooks';
-import { IBook } from './_util/types/types';
-import Create from './_components/Create';
-import './BooksGrid.css';
+import { connectDB, disconnectDB } from '@/app/api/_dbIntegration/connection';
+import { getBooksHandler } from './api/_handlers/getHandlers';
+import { IBook } from '@/app/types';
+import Container from '@/app/_frontend/components/Container';
 
 export default async function Home() {
   let books: IBook[] = [];
-  const dbClient = await connectToDb().catch((error) =>
+  const dbClient = await connectDB().catch((error) =>
     console.error('DB connection: ', error.message)
   );
 
   if (dbClient) {
     books =
-      (await getAllBooks(dbClient).catch((error) => {
+      (await getBooksHandler(dbClient).catch((error) => {
         console.error('Cant get books: ', error.message);
       })) || [];
-  }
 
-  return (
-    <div className="grid-wrapper">
-      <Create />
-      <div className="grid-container">
-        {books.map((book, index) => (
-          <div key={index} className="grid-item">
-            <div className="front">
-              <h3>{book.title}</h3>
-            </div>
-            <div className="back">
-              <p>Author: {book.author}</p>
-              <p>Release Date: {book.releaseDate}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    disconnectDB(dbClient);
+  }
+  return <Container books={JSON.parse(JSON.stringify(books))} />;
 }
 
 // db.collection('booksCollection').deleteMany({});
 //
 // db.booksCollection.insertOne({ hej: 'hej', title: 'hello', releaseDate: NumberInt(2020), author: 'Jonathan'})
 //
-// db.createCollection("booksCollection", { validator: { $jsonSchema: { bsonType: "object", title: "Student Object Validation", required: [ "title", "author", "releaseDate" ], properties: { title: { bsonType: "string",
-//                description: "'title' must be a string and is required"
-//             },
-//             releaseDate: {
-//                bsonType: "int",
-//                minimum: 1400,
-//                maximum: 3017,
-//                description: "'releaseDate' must be an integer in [ 1400, 3017 ] and is required"
-//             },
-//             author: {
-//                bsonType: "string",
-//                description: "'author' must be a string and is required"
-//             }
-//          }
-//       }
-//    }
-// } )
+// db.createCollection('booksCollection', {
+//   validator: {
+//     $jsonSchema: {
+//       bsonType: 'object',
+//       title: 'Student Object Validation',
+//       required: ['title', 'author', 'releaseDate', 'timestamp'],
+//       properties: {
+//         title: {
+//           bsonType: 'string',
+//           description: "'title' must be a string and is required",
+//         },
+//         releaseDate: {
+//           bsonType: 'date',
+//           description: 'date is required',
+//         },
+//         author: {
+//           bsonType: 'string',
+//           description: "'author' must be a string and is required",
+//         },
+//         timestamp: {
+//           bsonType: 'date',
+//           description: 'timestamp is required',
+//         },
+//       },
+//     },
+//   },
+// });
+//
+//

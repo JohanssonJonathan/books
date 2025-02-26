@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
-import { closeConnectionToDb, connectToDb } from '@/app/_util/dbIntegration';
-import { deleteBookHandler } from '@/app/_util/handlers/deleteBookHandler';
+import { connectDB, disconnectDB } from '@/app/api/_dbIntegration/connection';
+import { deleteBookHandler } from '@/app/api/_handlers/deleteHandlers';
 
 export async function DELETE(
   _: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const dbClient = await connectToDb().catch((error) =>
+  const dbClient = await connectDB().catch((error) =>
     console.error('DB connection: ', error.message)
   );
 
@@ -20,7 +20,7 @@ export async function DELETE(
       );
 
       if (acknowledged) {
-        closeConnectionToDb(dbClient);
+        disconnectDB(dbClient);
         if (deletedCount) {
           return new Response(
             JSON.stringify({
@@ -45,7 +45,7 @@ export async function DELETE(
         );
       }
     } catch (error) {
-      closeConnectionToDb(dbClient);
+      disconnectDB(dbClient);
 
       console.error('Error caught:', error); // Log the full error
       const currentError = error as unknown as Error;
