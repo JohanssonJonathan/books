@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   headers: () =>
     Promise.resolve([
       {
-        source: '/*',
+        source: '/',
         headers: [
           {
             key: 'Cache-Control',
