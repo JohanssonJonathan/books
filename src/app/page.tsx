@@ -3,6 +3,8 @@ import { getBooksHandler } from './api/_handlers/getHandlers';
 import { IBook } from '@/app/types';
 import Container from '@/app/_frontend/components/Container';
 
+export const fetchCache = 'force-no-store';
+
 export default async function Home() {
   let books: IBook[] = [];
   const dbClient = await connectDB().catch((error) =>
