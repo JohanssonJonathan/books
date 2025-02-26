@@ -6,7 +6,7 @@ const getDateString = (date?: string) => {
   const monthString = currentMonth < 10 ? `0${currentMonth}` : currentMonth;
   const dayString = currentDay < 10 ? `0${currentDay}` : currentDay;
 
-  return `${currentDate.getFullYear}-${monthString}-${dayString}`;
+  return `${currentDate.getFullYear()}-${monthString}-${dayString}`;
 };
 
 export default getDateString;
